@@ -72,6 +72,9 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.3")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.3")
 
+    //Read Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     // ROOM
     val roomVersion = "2.5.2"
     implementation("androidx.room:room-runtime:$roomVersion")
