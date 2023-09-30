@@ -8,7 +8,7 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -35,6 +35,7 @@ class RunFragment : Fragment(R.layout.fragment_run) {
         return binding.root
     }
 
+    @RequiresApi(34)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -50,17 +51,19 @@ class RunFragment : Fragment(R.layout.fragment_run) {
 
     }
 
+    @RequiresApi(34)
     private fun requestLocationPermissions() {
-        ActivityCompat.requestPermissions(
-            requireActivity(),
+        requestPermissions(
             arrayOf(
                 android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.POST_NOTIFICATIONS
             ),
             LOCATION_PERMISSIONS_REQUEST_CODE
         )
     }
 
+    @RequiresApi(34)
     private fun checkPermissions(): Boolean {
         val fineLocationPermission = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -70,6 +73,12 @@ class RunFragment : Fragment(R.layout.fragment_run) {
             requireContext(),
             android.Manifest.permission.ACCESS_COARSE_LOCATION
         )
+
+        val postNotificationsPermission = ContextCompat.checkSelfPermission(
+            requireContext(),
+            android.Manifest.permission.POST_NOTIFICATIONS
+        )
+
         val backgroundLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -81,6 +90,7 @@ class RunFragment : Fragment(R.layout.fragment_run) {
 
         return fineLocationPermission == PackageManager.PERMISSION_GRANTED
                 && coarseLocationPermission == PackageManager.PERMISSION_GRANTED
+                && postNotificationsPermission == PackageManager.PERMISSION_GRANTED
                 && backgroundLocationPermission == PackageManager.PERMISSION_GRANTED
     }
 
@@ -94,7 +104,7 @@ class RunFragment : Fragment(R.layout.fragment_run) {
             if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     verifyBackgroundPermission()
-                }else{
+                } else {
                     // CONTINUE
                 }
             }
@@ -109,7 +119,7 @@ class RunFragment : Fragment(R.layout.fragment_run) {
         ) {
             // CONTINUE
         } else {
-            val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         }
     }
