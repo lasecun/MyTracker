@@ -19,6 +19,7 @@ import com.itram.mytracker.other.Constants.POLYLINE_COLOR
 import com.itram.mytracker.other.Constants.POLYLINE_WIDTH
 import com.itram.mytracker.services.Polyline
 import com.itram.mytracker.services.TrackingService
+import com.itram.mytracker.services.TrackingUtility
 import com.itram.mytracker.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,6 +33,8 @@ class TrackingFragment : Fragment() {
     private var pathPoints = mutableListOf<Polyline>()
 
     private var map: GoogleMap? = null
+
+    private var curTimeInMillis = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +71,12 @@ class TrackingFragment : Fragment() {
             pathPoints = it
             addLatestPolyline()
             moveCameraToUser()
+        })
+
+        TrackingService.timeRunInMillis.observe(viewLifecycleOwner, Observer {
+            curTimeInMillis = it
+            val formattedTIme = TrackingUtility.getFormattedStopWatchTime(curTimeInMillis, true)
+            binding.tvTimer.text = formattedTIme
         })
     }
 
