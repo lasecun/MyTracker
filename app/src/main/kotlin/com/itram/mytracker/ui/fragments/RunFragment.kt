@@ -12,18 +12,23 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.itram.mytracker.R
+import com.itram.mytracker.adapter.RunAdapter
 import com.itram.mytracker.databinding.FragmentRunBinding
 import com.itram.mytracker.other.Constants.LOCATION_PERMISSIONS_REQUEST_CODE
 import com.itram.mytracker.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class RunFragment : Fragment(R.layout.fragment_run) {
+class RunFragment : Fragment() {
 
     private lateinit var binding: FragmentRunBinding
     private val viewModel: MainViewModel by viewModels()
+
+    private lateinit var runAdapter: RunAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,19 +40,32 @@ class RunFragment : Fragment(R.layout.fragment_run) {
         return binding.root
     }
 
+    private fun setupRecycleView() = binding.rvRuns.apply {
+        runAdapter = RunAdapter()
+        adapter = runAdapter
+        layoutManager = LinearLayoutManager(requireContext())
+    }
+
     @RequiresApi(34)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
-        }
 
         if (checkPermissions()) {
             // CONTINUE
         } else {
             requestLocationPermissions()
         }
+
+        binding.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
+        }
+
+        setupRecycleView()
+
+        viewModel.runsSortedByDate.observe(viewLifecycleOwner) {
+            runAdapter.submitList(it)
+        }
+
 
     }
 
