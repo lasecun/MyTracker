@@ -60,6 +60,10 @@ class TrackingService : LifecycleService() {
         val pathPoints = MutableLiveData<Polylines>()
     }
 
+    private fun pauseService() {
+        isTracking.postValue(false)
+    }
+
     @SuppressLint("MissingPermission")
     private fun updateLocationTracker(isTracking: Boolean) {
         if (isTracking) {
@@ -117,11 +121,13 @@ class TrackingService : LifecycleService() {
                         isFirstRun = false
                     } else {
                         Log.d("TRACKER", "RESUME SERVICE")
+                        startForegroundService()
                     }
                 }
 
                 ACTION_PAUSE_SERVICE -> {
                     Log.d("TRACKER", "ACTION_PAUSE_SERVICE")
+                    pauseService()
                 }
 
                 ACTION_STOP_SERVICE -> {
