@@ -68,18 +68,18 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
     }
 
     private fun writePersonalDataToSharedPreferences(): Boolean {
-        val name = binding.etName.text.toString()
-        val weight = binding.etWeight.text.toString()
-        if (name.isEmpty() || weight.isEmpty()) {
+        val nameText = binding.etName.text.toString()
+        val weightText = binding.etWeight.text.toString()
+        if (nameText.isEmpty() || weightText.isEmpty()) {
             return false
         }
         sharedPref.edit()
-            .putString(KEY_NAME, name)
-            .putFloat(KEY_WEIGHT, weight.toFloat())
+            .putString(KEY_NAME, nameText)
+            .putFloat(KEY_WEIGHT, weightText.toFloat())
             .putBoolean(KEY_FIRST_TIME_TOGGLE, false)
             .apply()
 
-        val toolbarText = "let's Go $name!"
+        val toolbarText = "let's Go $nameText!"
         requireActivity().findViewById<MaterialTextView>(R.id.tvToolbarTitle).text = toolbarText
         return true
     }
