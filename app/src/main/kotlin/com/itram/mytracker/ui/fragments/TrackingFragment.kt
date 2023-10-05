@@ -33,6 +33,7 @@ import com.itram.mytracker.services.TrackingUtility
 import com.itram.mytracker.ui.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
+import javax.inject.Inject
 import kotlin.math.round
 
 @AndroidEntryPoint
@@ -50,7 +51,8 @@ class TrackingFragment : Fragment() {
 
     private var menu: Menu? = null
 
-    private val weight = 80f
+    @set:Inject
+    var weight = 80f
 
     override fun onCreateView(
         inflater: LayoutInflater,
