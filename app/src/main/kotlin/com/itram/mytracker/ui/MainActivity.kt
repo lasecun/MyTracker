@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         setSupportActionBar(binding.toolbar)
-        navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
+        navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         binding.bottomNavigationView.setupWithNavController(navHostFragment.navController)
 
         navigateToTrackingFragmentIfNeeded(intent)
@@ -33,11 +34,12 @@ class MainActivity : AppCompatActivity() {
         findNavController(R.id.navHostFragment)
             .addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
-                    R.id.settingsFragment, R.id.runFragment, R.id.statisticsFragment -> binding.bottomNavigationView.visibility =
-                        View.VISIBLE
+                    R.id.settingsFragment,
+                    R.id.runFragment,
+                    R.id.statisticsFragment ->
+                        binding.bottomNavigationView.visibility = View.VISIBLE
 
-                    else -> binding.bottomNavigationView.visibility =
-                        View.GONE
+                    else -> binding.bottomNavigationView.visibility = View.GONE
                 }
             }
     }
@@ -47,8 +49,8 @@ class MainActivity : AppCompatActivity() {
         navigateToTrackingFragmentIfNeeded(intent)
     }
 
-    private fun navigateToTrackingFragmentIfNeeded(intent: Intent?){
-        if(intent?.action == ACTION_SHOW_TRACKING_FRAGMENT){
+    private fun navigateToTrackingFragmentIfNeeded(intent: Intent?) {
+        if (intent?.action == ACTION_SHOW_TRACKING_FRAGMENT) {
             navHostFragment.navController.navigate(R.id.action_global_tracking_fragment)
         }
     }

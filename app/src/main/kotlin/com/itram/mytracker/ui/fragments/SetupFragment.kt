@@ -19,8 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SetupFragment : Fragment(R.layout.fragment_setup) {
-
+class SetupFragment : Fragment() {
 
     @Inject
     lateinit var sharedPref: SharedPreferences
@@ -54,7 +53,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
             )
         }
 
-
         binding.tvContinue.setOnClickListener {
             val success = writePersonalDataToSharedPreferences()
             if (success) {
@@ -64,7 +62,6 @@ class SetupFragment : Fragment(R.layout.fragment_setup) {
                     .show()
             }
         }
-
     }
 
     private fun writePersonalDataToSharedPreferences(): Boolean {

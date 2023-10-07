@@ -6,17 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import com.itram.mytracker.R
-import com.itram.mytracker.databinding.FragmentSettingsBinding
 import com.itram.mytracker.databinding.FragmentStatisticsBinding
 import com.itram.mytracker.services.TrackingUtility
-import com.itram.mytracker.ui.viewmodels.MainViewModel
 import com.itram.mytracker.ui.viewmodels.StatisticsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Math.round
 import kotlin.math.roundToInt
-import kotlin.math.roundToLong
 
 @AndroidEntryPoint
 class StatisticsFragment : Fragment() {
