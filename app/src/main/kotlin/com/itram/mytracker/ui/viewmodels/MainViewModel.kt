@@ -1,12 +1,14 @@
 package com.itram.mytracker.ui.viewmodels
 
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.itram.mytracker.db.Run
 import com.itram.mytracker.other.SortType
 import com.itram.mytracker.repositories.MainRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,50 +23,61 @@ class MainViewModel @Inject constructor(
     private val runsSortedByTimeInMillis = mainRepository.getAllRunsSortedByMillis()
     private val runsSortedByAvg = mainRepository.getAllRunsSortedByAvgSpeed()
 
-    val runs = MediatorLiveData<List<Run>>()
-
-    var sortType = SortType.DATE
+    private val _state = MutableStateFlow(RunState())
+    val state: StateFlow<RunState> = _state
 
     init {
-        runs.addSource(runsSortedByDate) { result ->
-            if (sortType == SortType.DATE) {
-                result?.let { runs.value = it }
-            }
-        }
-        runs.addSource(runsSortedByAvg) { result ->
-            if (sortType == SortType.AVG_SPEED) {
-                result?.let { runs.value = it }
-            }
-        }
-        runs.addSource(runsSortedByCaloriesBurned) { result ->
-            if (sortType == SortType.CALORIES_BURNED) {
-                result?.let { runs.value = it }
-            }
-        }
-        runs.addSource(runsSortedByDistance) { result ->
-            if (sortType == SortType.DISTANCE) {
-                result?.let { runs.value = it }
-            }
-        }
-        runs.addSource(runsSortedByTimeInMillis) { result ->
-            if (sortType == SortType.RUNNING_TIME) {
-                result?.let { runs.value = it }
+        viewModelScope.launch {
+            runsSortedByDate.collect {
+                _state.update { it.copy(runs = it.runs) }
             }
         }
     }
 
-    fun sortRuns(sortType: SortType) = when (sortType) {
-        SortType.DATE -> runsSortedByDate.value?.let { runs.value = it }
-        SortType.RUNNING_TIME -> runsSortedByTimeInMillis.value?.let { runs.value = it }
-        SortType.AVG_SPEED -> runsSortedByAvg.value?.let { runs.value = it }
-        SortType.DISTANCE -> runsSortedByDistance.value?.let { runs.value = it }
-        SortType.CALORIES_BURNED -> runsSortedByCaloriesBurned.value?.let { runs.value = it }
-    }.also {
-        this.sortType = sortType
+    fun onEvent(event: RunEvent) {
+        when (event) {
+            is RunEvent.SortData -> {
+                sortRuns(event.sortBy)
+            }
+        }
+    }
+
+    private fun sortRuns(sortType: SortType) {
+        viewModelScope.launch {
+            when (sortType) {
+                SortType.DATE -> runsSortedByDate.collect { byDate ->
+                    _state.update { it.copy(runs = byDate) }
+                }
+
+                SortType.RUNNING_TIME -> runsSortedByTimeInMillis.collect { byTimeInMillis ->
+                    _state.update { it.copy(runs = byTimeInMillis) }
+                }
+
+                SortType.AVG_SPEED -> runsSortedByAvg.collect { byAvg ->
+                    _state.update { it.copy(runs = byAvg) }
+                }
+
+                SortType.DISTANCE -> runsSortedByDistance.collect { byDistance ->
+                    _state.update { it.copy(runs = byDistance) }
+                }
+
+                SortType.CALORIES_BURNED -> runsSortedByCaloriesBurned.collect { byCaloriesBurned ->
+                    _state.update { it.copy(runs = byCaloriesBurned) }
+                }
+            }
+        }
     }
 
     fun insertRun(run: Run) = viewModelScope.launch {
         mainRepository.insertRun(run)
     }
 
+}
+
+data class RunState(
+    val runs: List<Run> = emptyList()
+)
+
+sealed class RunEvent {
+    data class SortData(val sortBy: SortType) : RunEvent()
 }
