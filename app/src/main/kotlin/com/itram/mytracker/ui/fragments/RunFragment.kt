@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -18,10 +19,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.itram.mytracker.R
 import com.itram.mytracker.adapter.RunAdapter
 import com.itram.mytracker.databinding.FragmentRunBinding
-import com.itram.mytracker.other.Constants.LOCATION_PERMISSIONS_REQUEST_CODE
 import com.itram.mytracker.other.SortType
 import com.itram.mytracker.ui.viewmodels.MainViewModel
 import com.itram.mytracker.ui.viewmodels.RunEvent
@@ -57,11 +58,16 @@ class RunFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (checkPermissions()) {
-            // CONTINUE
-        } else {
-            requestLocationPermissions()
+        if (!checkPermissions()) {
+            requestMultiplePermissions.launch(
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                )
+            )
         }
+
 
         binding.fab.setOnClickListener {
             findNavController().navigate(R.id.action_runFragment_to_trackingFragment)
@@ -102,18 +108,6 @@ class RunFragment : Fragment() {
     }
 
     @RequiresApi(34)
-    private fun requestLocationPermissions() {
-        requestPermissions(
-            arrayOf(
-                android.Manifest.permission.ACCESS_FINE_LOCATION,
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.POST_NOTIFICATIONS
-            ),
-            LOCATION_PERMISSIONS_REQUEST_CODE
-        )
-    }
-
-    @RequiresApi(34)
     private fun checkPermissions(): Boolean {
         val fineLocationPermission = ContextCompat.checkSelfPermission(
             requireContext(),
@@ -144,20 +138,16 @@ class RunFragment : Fragment() {
                 && backgroundLocationPermission == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    verifyBackgroundPermission()
-                } else {
-                    // CONTINUE
-                }
-            }
+    private val requestMultiplePermissions = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.all { it.value }) {
+            verifyBackgroundPermission()
+        } else {
+            MaterialAlertDialogBuilder(requireContext())
+                .setMessage("This permission is needed")
+                .setPositiveButton("Ok") { dialog, _ -> dialog.dismiss() }
+                .show()
         }
     }
 
@@ -165,10 +155,9 @@ class RunFragment : Fragment() {
         if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // CONTINUE
-        } else {
+            // Show PoPUp with the explanation why we need Background Location.
             val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivity(intent)
         }

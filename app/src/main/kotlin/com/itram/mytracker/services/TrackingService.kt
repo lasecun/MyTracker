@@ -18,6 +18,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Granularity
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -28,8 +29,8 @@ import com.itram.mytracker.R
 import com.itram.mytracker.other.Constants.ACTION_PAUSE_SERVICE
 import com.itram.mytracker.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.itram.mytracker.other.Constants.ACTION_STOP_SERVICE
-import com.itram.mytracker.other.Constants.FASTEST_LOCATION_INTERVAL
 import com.itram.mytracker.other.Constants.LOCATION_UPDATE_INTERVAL
+import com.itram.mytracker.other.Constants.MINIMAL_DISTANCE
 import com.itram.mytracker.other.Constants.NOTIFICATION_CHANNEL_ID
 import com.itram.mytracker.other.Constants.NOTIFICATION_CHANNEL_NAME
 import com.itram.mytracker.other.Constants.NOTIFICATION_ID
@@ -153,11 +154,12 @@ class TrackingService : LifecycleService() {
     @SuppressLint("MissingPermission")
     private fun updateLocationTracker(isTracking: Boolean) {
         if (isTracking) {
-            val request = LocationRequest().apply {
-                interval = LOCATION_UPDATE_INTERVAL
-                fastestInterval = FASTEST_LOCATION_INTERVAL
-                priority = PRIORITY_HIGH_ACCURACY
-            }
+            val request = LocationRequest.Builder(PRIORITY_HIGH_ACCURACY, LOCATION_UPDATE_INTERVAL).apply {
+                setMinUpdateDistanceMeters(MINIMAL_DISTANCE)
+                setGranularity(Granularity.GRANULARITY_PERMISSION_LEVEL)
+                setWaitForAccurateLocation(true)
+            }.build()
+
             fusedLocationProviderClient.requestLocationUpdates(
                 request,
                 locationCallback,
@@ -204,7 +206,7 @@ class TrackingService : LifecycleService() {
         isFirstRun = true
         pauseService()
         postInitialValue()
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_DETACH)
         stopSelf()
     }
 
